@@ -21,13 +21,14 @@
                             <div class="card shadow-lg border-0 rounded-lg mt-5">
                                 <div class="card-header"><h3 class="text-center font-weight-light my-4">Cambiar Contraseña</h3></div>
                                 <div class="card-body">
-                                    <form>
-                                        <input class="form-control" type="text" value="@TempData["IdUsuario"]"/>
+
+                                    <form action="@Url.Action("CambiarClave","Acceso")" method="post">
+                                        <input class="form-control" type="text" value="@TempData["IdUsuario"]" name="idusuario" />
 
                                         <div class="row mb-3">
                                             <div class="col-md-12">
                                                 <div class="form-floating mb-3 mb-md-0">
-                                                    <input class="form-control" id="inputPassword" type="password" />
+                                                    <input class="form-control" id="inputPassword" type="password" name="claveactual" value="@ViewData["vclave"]"/>
                                                     <label for="inputPassword">Contraseña Actual</label>
                                                 </div>
                                             </div>
@@ -36,7 +37,7 @@
                                         <div class="row mb-3">
                                             <div class="col-md-12">
                                                 <div class="form-floating mb-3 mb-md-0">
-                                                    <input class="form-control" id="inputPassword" type="password" />
+                                                    <input class="form-control" id="inputPassword" type="password" name="nuevaclave" />
                                                     <label for="inputPassword">Contraseña Nueva</label>
                                                 </div>
                                             </div>
@@ -45,13 +46,28 @@
                                         <div class="row mb-3">
                                             <div class="col-md-12">
                                                 <div class="form-floating mb-3 mb-md-0">
-                                                    <input class="form-control" id="inputPassword" type="password" />
+                                                    <input class="form-control" id="inputPassword" type="password" name="confirmarclave" />
                                                     <label for="inputPassword">Confirmar Contraseña Nueva</label>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        @{
+
+                                            if (ViewBag.Error != null)
+                                            {
+                                                <div class="row mb-3">
+                                                    <div class="col-md-12">
+                                                        <div class="alert alert-danger" role="alert">
+                                                            @ViewBag.Error
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+
                                         <div class="mt-4 mb-0">
-                                            <div class="d-grid"><a class="btn btn-primary btn-block" href="login.html">Cambiar Contraseña</a></div>
+                                            <div class="d-grid"><button class="btn btn-primary btn-block" type="submit">Cambiar Contraseña</button></div>
                                         </div>
                                     </form>
                                 </div>
