@@ -25,6 +25,7 @@ namespace CapaPresentacionAdmin.Controllers
 
             if(oUsuario == null)
             {
+                //Solo comparte la informacion con la misma vista
                 ViewBag.Error = "correo o contraseña no correcta";
                 return View();
             }
@@ -33,7 +34,9 @@ namespace CapaPresentacionAdmin.Controllers
 
                 if (oUsuario.Reestablecer)
                 {
-                    //commit prueba
+                    //Con TempData podemos almacenar valores de forma temporal y usarla en otras vistas, en este caso en la de cambiarClave
+                    TempData["IdUsuario"] = oUsuario.IdUsuario;
+                    return RedirectToAction("CambiarClave");
                 }
                 ViewBag.Error = null;
                 return RedirectToAction("Index", "Home");
