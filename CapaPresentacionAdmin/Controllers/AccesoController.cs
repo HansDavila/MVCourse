@@ -33,7 +33,7 @@ namespace CapaPresentacionAdmin.Controllers
 
                 if (oUsuario.Reestablecer)
                 {
-
+                    //commit prueba
                 }
                 ViewBag.Error = null;
                 return RedirectToAction("Index", "Home");
