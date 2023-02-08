@@ -41,7 +41,10 @@ namespace CapaPresentacionAdmin.Controllers
                     return RedirectToAction("CambiarClave");
                 }
 
-                //FormsAuthentication.SetAuthCookie(oUsuario.Correo)
+                //Se activa la autenticacion por correo
+                FormsAuthentication.SetAuthCookie(oUsuario.Correo, false);
+
+
                 ViewBag.Error = null;
                 return RedirectToAction("Index", "Home");
             }
@@ -138,6 +141,8 @@ namespace CapaPresentacionAdmin.Controllers
 
         public ActionResult CerrarSesion()
         {
+            //Se cierre la cesion del usuario (La que se abrio desde el index)
+            FormsAuthentication.SignOut();
             return RedirectToAction("Index");
         }
 

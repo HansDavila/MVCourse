@@ -12,6 +12,8 @@ using System.Web.Mvc;
 
 namespace CapaPresentacionAdmin.Controllers
 {
+    //No va a poder acceder a ninguna de estas vistas si no esta autorizado
+    [Authorize]
     public class MantenedorController : Controller
     {
         // GET: Mantenedor

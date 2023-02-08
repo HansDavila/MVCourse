@@ -13,6 +13,9 @@ using ClosedXML.Excel;
 
 namespace CapaPresentacionAdmin.Controllers
 {
+    //No va a poder acceder a ninguna de estas vistas si no esta autorizado
+    [Authorize]
+
     public class HomeController : Controller
     {
         public ActionResult Index()
