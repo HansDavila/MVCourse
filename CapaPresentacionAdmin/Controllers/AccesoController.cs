@@ -6,6 +6,8 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
+using System.Web.Security;
+
 namespace CapaPresentacionAdmin.Controllers
 {
     public class AccesoController : Controller
@@ -38,6 +40,8 @@ namespace CapaPresentacionAdmin.Controllers
                     TempData["IdUsuario"] = oUsuario.IdUsuario;
                     return RedirectToAction("CambiarClave");
                 }
+
+                //FormsAuthentication.SetAuthCookie(oUsuario.Correo)
                 ViewBag.Error = null;
                 return RedirectToAction("Index", "Home");
             }
@@ -130,6 +134,11 @@ namespace CapaPresentacionAdmin.Controllers
                 ViewBag.Error = mensaje;
                 return View();
             }
+        }
+
+        public ActionResult CerrarSesion()
+        {
+            return RedirectToAction("Index");
         }
 
         
