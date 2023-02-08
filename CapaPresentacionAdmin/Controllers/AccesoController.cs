@@ -92,15 +92,47 @@ namespace CapaPresentacionAdmin.Controllers
                 TempData["IdUsuario"] = idusuario;
                 ViewBag.Error = mensaje;
                 return View();
-            }
-
-            return View();
+            }        
         }
 
+
+        [HttpGet]
         public ActionResult Reestablecer()
         {
             return View();
         }
+
+        [HttpPost]
+        public ActionResult Reestablecer(string correo)
+        {
+            Usuario oUsuario = new Usuario(); 
+
+            oUsuario = new CN_Usuarios().Lista().Where(item => item.Correo == correo).FirstOrDefault();
+
+            //si no encontro usuario...
+            if(oUsuario == null)
+            {
+                ViewBag.Error = "No se encontro un usuario relacionado a ese correo";
+                return View();
+            }
+
+
+            string mensaje = string.Empty;
+            bool respuesta = new CN_Usuarios().ReestablecerClave(oUsuario.IdUsuario, correo, out mensaje);
+
+            if(respuesta)
+            {
+                ViewBag.Error = null;
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                ViewBag.Error = mensaje;
+                return View();
+            }
+        }
+
+        
 
         
     }
