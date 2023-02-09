@@ -13,13 +13,13 @@ namespace CapaPresentacionTIenda.Controllers
     public class AccesoController : Controller
     {
         // GET: Acceso
-        public ActionResult Index()
+        public ActionResult Indexes()
         {
             return View();
         }
 
         [HttpPost]
-        public ActionResult Index(string correo, string clave)
+        public ActionResult Indexes(string correo, string clave)
         {
             Cliente oCliente = null;
 
@@ -80,7 +80,7 @@ namespace CapaPresentacionTIenda.Controllers
             if(resultado > 0)
             {
                 ViewBag.Error = null;
-                return RedirectToAction("Index", "Acceso");
+                return RedirectToAction("Indexes", "Acceso");
             }
             else
             {
@@ -117,7 +117,7 @@ namespace CapaPresentacionTIenda.Controllers
             if (respuesta)
             {
                 ViewBag.Error = null;
-                return RedirectToAction("Index");
+                return RedirectToAction("Indexes");
             }
             else
             {
@@ -139,7 +139,7 @@ namespace CapaPresentacionTIenda.Controllers
 
             if (oCliente.Clave != CN_Recursos.ConvertirSha256(claveactual))
             {
-                TempData["IdUsuario"] = idcliente;
+                TempData["IdCliente"] = idcliente;
                 ViewData["vclave"] = "";
                 ViewBag.Error = "La contraseña actual no es correcta";
                 return View();
@@ -158,11 +158,11 @@ namespace CapaPresentacionTIenda.Controllers
 
             string mensaje = string.Empty;
 
-            bool respuesta = new CN_Usuarios().CambiarClave(int.Parse(idcliente), nuevaclave, out mensaje);
+            bool respuesta = new CN_Cliente().CambiarClave(int.Parse(idcliente), nuevaclave, out mensaje);
 
             if (respuesta)
             {
-                return RedirectToAction("Index");
+                return RedirectToAction("Indexes");
             }
             else
             {
@@ -177,7 +177,7 @@ namespace CapaPresentacionTIenda.Controllers
         {
             //Se cierre la cesion del usuario (La que se abrio desde el index)
             FormsAuthentication.SignOut();
-            return RedirectToAction("Index");
+            return RedirectToAction("Indexes");
         }
 
 
