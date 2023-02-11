@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace CapaDatos
 {
@@ -183,6 +184,68 @@ namespace CapaDatos
             }
 
             return resultado;
+        }
+
+        public List<Marca> ListarMarcaporCategoria(int idcategoria)
+        {
+            List<Marca> lista = new List<Marca>();
+
+            try
+            {
+                //Con la conexion a la base de datos hacemos lo siguiente
+                using (SqlConnection oconexion = new SqlConnection(Conexion.cn))
+                {
+                    //Query para obtener campos de la marca
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine("SELECT DISTINCT M.IdMarca, M.Descripcion");
+                    sb.AppendLine("FROM PRODUCTO as P");
+                    sb.AppendLine("INNER JOIN CATEGORIA as C");
+                    sb.AppendLine("ON C.IdCategoria = P.IdCategoria");
+                    sb.AppendLine("INNER JOIN Marca as M");
+                    sb.AppendLine("ON M.IdMarca = P.IdMarca");
+                    sb.AppendLine("WHERE C.IdCategoria = iif(@idcategoria = 0, C.IdCategoria, @idcategoria)");
+                  
+
+                    //Objeto donde se guarda la query y conexion para usarla
+                    SqlCommand cmd = new SqlCommand(sb.ToString(), oconexion);
+                    cmd.Parameters.AddWithValue("@idcategoria", idcategoria);
+
+                    //Se declara que el comando es de tipo texto (no store procedure u otro)
+                    cmd.CommandType = CommandType.Text;
+
+                    //Se abre la conexion
+                    oconexion.Open();
+
+                    //Se crea un reader que va a ejecutar el comando
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        //Mientras lea
+                        while (reader.Read())
+                        {
+                            //En la lista crea una nueva categoria  con los campos capturados por el reader
+                            lista.Add(
+                                new Marca()
+                                {
+                                    //Los campos se sacan de la capa de entidades
+
+                                    //Para obtener la info se especifica el campo que se quiere obtener en el reader
+                                    IdMarca = Convert.ToInt32(reader["IdMarca"]),
+                                    Descripcion = reader["Descripcion"].ToString(),                                    
+                                }
+                            );
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //Crea una lista vacia
+                lista = new List<Marca>();
+            }
+
+            //Regresa lista
+            return lista;
         }
     }
 }
