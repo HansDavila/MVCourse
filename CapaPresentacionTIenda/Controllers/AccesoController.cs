@@ -176,6 +176,7 @@ namespace CapaPresentacionTIenda.Controllers
         public ActionResult CerrarSesion()
         {
             //Se cierre la cesion del usuario (La que se abrio desde el index)
+            Session["Cliente"] = null;
             FormsAuthentication.SignOut();
             return RedirectToAction("Indexes");
         }

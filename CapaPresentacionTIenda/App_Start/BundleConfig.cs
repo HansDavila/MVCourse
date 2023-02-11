@@ -21,7 +21,7 @@ namespace CapaPresentacionTIenda
 
             bundles.Add(new Bundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap.bundle.js",
-                      "~/Scripts/fontawesome/all.mim.js",
+                      "~/Scripts/fontawesome/all.min.js",
                       "~/Scripts/loadingoverlay.min.js",
                       "~/Scripts/sweetalert.min.js"
                       ));
