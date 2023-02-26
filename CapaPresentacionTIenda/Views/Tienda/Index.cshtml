@@ -154,9 +154,47 @@
                             $("<label>").addClass("form-check-label").text(element.Descripcion).attr({ "for": "c" + i })
                         ).appendTo("#contenedor_categoria")
                     })
+
+                    MostrarMarca();
                 },
                 beforeSend: function () {
                     $("#contenedor_categoria").LoadingOverlay("show");
+                }
+
+            })
+        }
+
+
+        function MostrarMarca() {
+            
+            var _idcategoria = $("input[name=categoria]:checked").val()
+            console.log(_idcategoria);
+
+            jQuery.ajax({
+                url: "@Url.Action("ListarMarcaporCategoria", "Tienda")",
+                type: "POST",
+                data: JSON.stringify({ idcategoria: _idcategoria}),                
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+
+                    console.log("")
+                    $("#contenedor_marca").LoadingOverlay("hide");
+                    
+                    $("<div>").addClass("form-check").append(
+                        $("<input>").addClass("form-check-input").attr({ "type": "radio", "name": "marca", "value": "0", "id": "mx", "checked": "checked" }),
+                        $("<label>").addClass("form-check-label").text("Todos").attr({ "for": "mx" })
+                    ).appendTo("#contenedor_marca")
+
+                    $.each(response.data, function (i, element) {
+                        $("<div>").addClass("form-check").append(
+                            $("<input>").addClass("form-check-input").attr({ "type": "radio", "name": "marca", "value": element.IdMarca, "id": "m" + i}),
+                            $("<label>").addClass("form-check-label").text(element.Descripcion).attr({ "for": "m" + i })
+                        ).appendTo("#contenedor_marca")
+                    })
+                },             
+                beforeSend: function () {
+                    $("#contenedor_marca").LoadingOverlay("show");
                 }
 
             })
