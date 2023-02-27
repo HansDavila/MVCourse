@@ -85,6 +85,40 @@ namespace CapaPresentacionTIenda.Controllers
             return jsonresult;
         }
 
+        [HttpPost]
+        public JsonResult AgregarCarrito(int idproducto)
+        {
+            //Se obtiene el id del cliente en la sesion
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            bool existe = new CN_Carrito().ExisteCarrito(idcliente, idproducto);
+
+            bool respuesta = false;
+
+            string mensaje = string.Empty;
+
+            if (existe)
+            {
+                mensaje = "El producto ya existe en el carrito";
+            }
+            else
+            {
+                respuesta = new CN_Carrito().OperacionCarrito(idcliente, idproducto, true, out mensaje);
+            }
+
+            return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        public JsonResult CantidadEnCarrito()
+        {
+            //Se obtiene el id del cliente en la sesion
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            int cantidad = new CN_Carrito().CantidadEnCarrito(idcliente);
+            return Json(new {cantidad = cantidad }, JsonRequestBehavior.AllowGet);
+        }
+
 
     }
 }
