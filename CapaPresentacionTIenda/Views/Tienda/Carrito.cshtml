@@ -380,6 +380,56 @@
             });
         })
 
+        $(document).on("click", ".btn-restar", function () {
+            var div_contenedor = $(this).parent("div.d-flex");
+
+            //Del div que obtuvimos queremos buscar un <input> con la clase "input-cantidad"
+            var input_cantidad = $(div_contenedor).find("input.input-cantidad")
+
+            var btn = $(this);
+
+            //La etiqueta de input tiene una data llamada "oProducto"
+            var idproducto = $(input_cantidad).data("oProducto").IdProducto;
+
+            var cantidad = parseInt($(input_cantidad).val()) - 1;
+
+            if (cantidad >= 1) {
+
+                jQuery.ajax({
+                    url: '@Url.Action("OperacionCarrito", "Tienda")',
+                    type: "POST",
+                    data: JSON.stringify({
+                         idproducto: idproducto,
+                         sumar: false
+                    }),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+
+                        $(btn).LoadingOverlay("hide");
+
+                        if (data.respuesta) {
+
+                            $(input_cantidad).val(cantidad);
+                            sumarTotal();
+
+                        } else {
+                            swal("", data.mensaje, "warning")
+                        }
+                    },
+                    beforeSend: function () {
+                        $(btn).LoadingOverlay("show")
+                    },
+                    error: function (error) {
+                        $(btn).LoadingOverlay("hide");
+                    }
+                });
+            }
+
+
+
+        })
+
 
     </script>    
 }
