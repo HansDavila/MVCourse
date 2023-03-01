@@ -132,7 +132,7 @@ namespace CapaDatos
                 //Con la conexion a la base de datos hacemos lo siguiente
                 using (SqlConnection oconexion = new SqlConnection(Conexion.cn))
                 {
-                    string query = "SELECT * FROM fn_obtenerCarritoCliente(@Iidcliente)";
+                    string query = "SELECT * FROM fn_obtenerCarritoCliente(@idcliente)";
 
                     //Objeto donde se guarda la query y conexion para usarla
                     SqlCommand cmd = new SqlCommand(query, oconexion);
@@ -159,8 +159,7 @@ namespace CapaDatos
                                         //Para obtener la info se especifica el campo que se quiere obtener en el reader
                                         IdProducto = Convert.ToInt32(reader["IdProducto"]),
                                         Nombre = reader["Nombre"].ToString(),                                                                                
-                                        Precio = Convert.ToDecimal(reader["Precio"], new CultureInfo("es-MX")),
-                                        Stock = Convert.ToInt32(reader["Stock"]),
+                                        Precio = Convert.ToDecimal(reader["Precio"], new CultureInfo("es-MX")),                                        
                                         RutaImagen = reader["RutaImagen"].ToString(),
                                         NombreImagen = reader["NombreImagen"].ToString(),
                                         oMarca = new Marca() { Descripcion = reader["DesMarca"].ToString() }
