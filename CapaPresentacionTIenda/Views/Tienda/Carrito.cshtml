@@ -201,11 +201,11 @@
                                         )
                                     ),
 
-                                    //5
+                                    //Boton para eliminar
                                     $("<div>").addClass("col-sm-2 align-self-center").append(
                                         $("<button>").addClass("btn btn-outline-danger btn-eliminar").append(
                                             $("<i>").addClass("far fa-trash-alt"), " Eliminar"
-                                        )
+                                        ).data("idproducto", item.oProducto.IdProducto)
                                     )
 
                                 )
@@ -425,6 +425,51 @@
                     }
                 });
             }
+        })
+
+
+        $(document).on("click", ".btn-eliminar", function () {
+
+            //Se obtiene el valor del id accediento el contenido del data del boton
+            var idproducto = $(this).data("idproducto");
+
+            var card_producto = $(this).parents("div.card-producto");
+
+            jQuery.ajax({
+                url: '@Url.Action("EliminarCarrito", "Tienda")',
+                type: "POST",
+                data: JSON.stringify({
+                    idproducto: idproducto,                    
+                }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+
+                    
+
+                    if (data.respuesta) {
+
+                        card_producto.remove();
+
+                        MostrarCantidadCarrito();
+
+                        sumarTotal()
+                    } else {
+                        swal("", data.mensaje, "warning")
+                    }
+                },
+                beforeSend: function () {
+                    
+                },
+                error: function (error) {
+                   
+                }
+            });
+
+
+
+
+
 
 
 

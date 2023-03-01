@@ -156,7 +156,7 @@ namespace CapaPresentacionTIenda.Controllers
 
             string mensaje = string.Empty;
 
-            respuesta = new CN_Carrito().OperacionCarrito(idcliente, idproducto, true, out mensaje);
+            respuesta = new CN_Carrito().OperacionCarrito(idcliente, idproducto, sumar, out mensaje);
 
             return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
