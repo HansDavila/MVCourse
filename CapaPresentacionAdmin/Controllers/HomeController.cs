@@ -29,6 +29,7 @@ namespace CapaPresentacionAdmin.Controllers
         }
 
         //Devuelve la lista de usuarios en data con la informaciond el usuario en formato Json
+        [HttpGet]
         public JsonResult ListarUsuarios()
         {
             List<Usuario> oLista= new List<Usuario>();

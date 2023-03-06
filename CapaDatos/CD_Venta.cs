@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace CapaDatos
 {
@@ -55,6 +56,67 @@ namespace CapaDatos
 
             return respuesta;
 
+        }
+
+        public List<DetalleVenta> ListarCompras(int idcliente)
+        {
+            List<DetalleVenta> lista = new List<DetalleVenta>();
+
+            try
+            {
+                //Con la conexion a la base de datos hacemos lo siguiente
+                using (SqlConnection oconexion = new SqlConnection(Conexion.cn))
+                {
+                    string query = "SELECT * FROM fn_ListarCompra(@idcliente)";
+
+                    //Objeto donde se guarda la query y conexion para usarla
+                    SqlCommand cmd = new SqlCommand(query, oconexion);
+                    cmd.Parameters.AddWithValue("@idcliente", idcliente);
+                    //Se declara que el comando es de tipo texto (no store procedure u otro)
+                    cmd.CommandType = CommandType.Text;
+
+                    //Se abre la conexion
+                    oconexion.Open();
+
+                    //Se crea un reader que va a ejecutar el comando
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        //Mientras lea
+                        while (reader.Read())
+                        {
+                            //En la lista crea una nueva categoria  con los campos capturados por el reader
+                            lista.Add(
+                                new DetalleVenta()
+                                {
+                                    //Los campos se sacan de la capa de entidades
+                                    oProducto = new Producto()
+                                    {
+                                        //Para obtener la info se especifica el campo que se quiere obtener en el reader                                        
+                                        Nombre = reader["Nombre"].ToString(),
+                                        Precio = Convert.ToDecimal(reader["Precio"], new CultureInfo("es-MX")),
+                                        RutaImagen = reader["RutaImagen"].ToString(),
+                                        NombreImagen = reader["NombreImagen"].ToString(),
+                                        
+                                    },
+                                    Cantidad = Convert.ToInt32(reader["Cantidad"]),
+                                    Total = Convert.ToDecimal(reader["Total"], new CultureInfo("es-MX")),
+                                    IdTransaccion = reader["IdTransaccion"].ToString()
+
+                                }
+                            );
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //Crea una lista vacia
+                lista = new List<DetalleVenta>();
+            }
+
+            //Regresa lista
+            return lista;
         }
     }
 }
