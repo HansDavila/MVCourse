@@ -268,9 +268,11 @@
 
 
         jQuery.validator.addMethod("preciodecimal", function (value, element) {
-            return this.optional(element) || /^\d{0,4}(\.\d{0,2})?$/i.test(value);
+            
+            return this.optional(element) || /^\d{0,6}(\.\d{0,6})?$/i.test(value);
         }, "El formato correcto del precio es ##.##");
 
+        1400
 
         $("#contenedor").validate({
             rules: {

@@ -29,7 +29,7 @@ namespace CapaPresentacionAdmin
             //// Utilice la versión de desarrollo de Modernizr para desarrollar y obtener información sobre los formularios.  De esta manera estará
             //// para la producción, use la herramienta de compilación disponible en https://modernizr.com para seleccionar solo las pruebas que necesite.
             //bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
-            //            "~/Scripts/modernizr-*"));
+            //           "~/Scripts/modernizr-*"));
 
             bundles.Add(new Bundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap.bundle.js"));

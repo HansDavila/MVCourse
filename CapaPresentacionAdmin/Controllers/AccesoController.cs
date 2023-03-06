@@ -47,11 +47,7 @@ namespace CapaPresentacionAdmin.Controllers
 
                 ViewBag.Error = null;
                 return RedirectToAction("Index", "Home");
-            }
-
-
-
-         
+            }       
         }
 
         [HttpGet]
