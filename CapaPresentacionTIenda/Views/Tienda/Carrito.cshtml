@@ -94,16 +94,16 @@
                                     <h5 class="card-title">Detalle Envio</h5>
                                     <form>
                                         <div class="mb-2">
-                                            <label for="cbodepartamento" class="form-label">Departamento:</label>
-                                            <select class="form-select form-select-sm" id="cbodepartamento"></select>
+                                            <label for="cboestado" class="form-label">Estado:</label>
+                                            <select class="form-select form-select-sm" id="cboestado"></select>
                                         </div>
                                         <div class="mb-2">
-                                            <label for="cboprovincia" class="form-label">Provincia:</label>
-                                            <select class="form-select form-select-sm" id="cboprovincia"></select>
+                                            <label for="cbomunicipio" class="form-label">Municipio:</label>
+                                            <select class="form-select form-select-sm" id="cbomunicipio"></select>
                                         </div>
                                         <div class="mb-2">
-                                            <label for="cbodistrito" class="form-label">Distrito:</label>
-                                            <select class="form-select form-select-sm" id="cbodistrito"></select>
+                                            <label for="cbocolonia" class="form-label">Colonia:</label>
+                                            <select class="form-select form-select-sm" id="cbocolonia"></select>
                                         </div>
                                         <div class="mb-2">
                                             <label for="txtnombrecontacto" class="form-label">Nombre Contacto:</label>
@@ -119,7 +119,7 @@
                                         </div>
 
                                         <div class="d-grid">
-                                            <button class="btn btn-success" type="button" onclick="RealizarPago()">
+                                            <button class="btn btn-success" type="button" onclick="RealizarPago2()">
                                                 <i class="fab fa-paypal"></i> Terminar y Procesar Pago
                                             </button>
                                         </div>
@@ -226,7 +226,7 @@
 
             });
 
-            ListarDepartamento();
+            ListarEstado();
 
         })
         //Llenado de Selector de Lista departamento
@@ -312,6 +312,100 @@
                      if (data.lista != null) {
                          $.each(data.lista, function (i, item) {
                              $("<option>").attr({ "value": item.IdDistrito }).text(item.Descripcion).appendTo("#cbodistrito")
+                         })
+                     }
+                }
+
+            });
+        }
+
+
+        //NUEVA IMPLEMENTACION
+
+
+        //Llenado de Selector de Lista departamento
+        function ListarEstado() {
+
+            $("<option>").attr({ "value": "00", "disabled":"disabled", "selected":"true" }).text("Seleccionar").appendTo("#cboestado")
+
+             jQuery.ajax({
+                url: '@Url.Action("ObtenerEstado", "Tienda")',
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+
+                     if (data.lista != null) {
+                         $.each(data.lista, function (i, item) {
+                             $("<option>").attr({ "value": item.IdEstado }).text(item.Descripcion).appendTo("#cboestado")
+                         })
+
+                         ListarMunicipio();
+                     }
+                }
+
+            });
+        }
+
+        //Cuando se efecua un cambio en el selector de departamento -> actualizar la lista de provincia
+        $("#cboestado").on("change", function () {
+            ListarMunicipio();
+        })
+
+        //Llenado de Selector de Lista Provincia
+        function ListarMunicipio() {
+
+            $("#cbomunicipio").html("")
+
+            $("<option>").attr({ "value": "00", "disabled": "disabled", "selected": "true" }).text("Seleccionar").appendTo("#cbomunicipio")
+
+             jQuery.ajax({
+                url: '@Url.Action("ObtenerMunicipio", "Tienda")',
+                 type: "POST",
+                 data: JSON.stringify({ IdEstado: $("#cboestado option:selected").val()}),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+
+                     if (data.lista != null) {
+                         $.each(data.lista, function (i, item) {
+                             $("<option>").attr({ "value": item.IdMunicipio }).text(item.Descripcion).appendTo("#cbomunicipio")
+                         })
+                         ListarColonia();
+                     }
+                }
+
+            });
+        }
+
+
+        //Cuando se efecua un cambio en el selector de provincia -> actualizar la lista de distritos
+        $("#cbomunicipio").on("change", function () {
+            ListarColonia();
+        })
+
+
+        //Llenado de Selector de Lista Distrito
+        function ListarColonia() {
+
+            $("#cbocolonia").html("")
+
+            $("<option>").attr({ "value": "00", "disabled": "disabled", "selected": "true" }).text("Seleccionar").appendTo("#cbocolonia")
+
+             jQuery.ajax({
+                url: '@Url.Action("ObtenerColonia", "Tienda")',
+                 type: "POST",
+                 data: JSON.stringify({
+                     IdEstado: $("#cboestado option:selected").val(),
+                     IdMunicipio: $("#cbomunicipio option:selected").val()
+                 }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+
+                     if (data.lista != null) {
+                         $.each(data.lista, function (i, item) {
+                             $("<option>").attr({ "value": item.IdColonia }).text(item.Descripcion).appendTo("#cbocolonia")
                          })
                      }
                 }
@@ -529,7 +623,80 @@
                         } else {
                             swal("", "Vuelva a intentarlo más tarde", "warning");
                         }
-                        
+
+                    },
+                    beforeSend: function () {
+                        $.LoadingOverlay("show")
+                    },
+                    error: function (error) {
+                        $.LoadingOverlay("hide")
+                    }
+            });
+        }
+
+        function RealizarPago2() {
+
+            if (parseInt($("#cantidadcarrito").text()) == 0) {
+                swal("", "No existe productos en el carrito", "warning");
+                return;
+            }
+
+
+
+            if ($("#cboestado").val() == null || $("#txtnombrecontacto").val() == "" || $("#txtdireccion").val() == "" || $("#txttelefono").val() == "") {
+                swal("", "Debe completar los datos de detalle envio", "warning");
+                return
+            }
+
+            var venta = {
+                TotalProducto: $("input.input-cantidad").length,
+                MontoTotal: 0,
+                Contacto: $("#txtnombrecontacto").val(),
+                IdDistrito: $("#cboestado").val(),
+                Telefono: $("#txttelefono").val(),
+                Direccion: $("#txtdireccion").val()
+            }
+
+            var lista_carrito = [];
+
+            $("input.input-cantidad").each(function (i) {
+                var producto = $(this).data("oProducto");
+                var cantidad = parseFloat($(this).val())
+
+                lista_carrito.push({
+                    oProducto: producto,
+                    Cantidad: cantidad,
+                })
+            })
+
+
+            jQuery.ajax({
+                    url: '@Url.Action("ProcesarPago", "Tienda")',
+                    type: "POST",
+                    data: JSON.stringify({
+                        oListaCarrito : lista_carrito,
+                        oVenta : venta
+                    }),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+
+                        $.LoadingOverlay("hide")
+
+                        if (data.Status) {
+
+                            var jsonresult = data.Response;
+
+                            var links = jsonresult.links;
+
+                            var resultado = links.find(item => item.rel === "approve");
+
+                            window.location.href = resultado.href;
+
+                        } else {
+                            swal("", "Vuelva a intentarlo más tarde", "warning");
+                        }
+
                     },
                     beforeSend: function () {
                         $.LoadingOverlay("show")

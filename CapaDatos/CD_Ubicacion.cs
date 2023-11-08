@@ -174,5 +174,172 @@ namespace CapaDatos
             //Regresa lista
             return lista;
         }
+
+
+        public List<Estado> obtenerEstado()
+        {
+            List<Estado> lista = new List<Estado>();
+
+            try
+            {
+                //Con la conexion a la base de datos hacemos lo siguiente
+                using (SqlConnection oconexion = new SqlConnection(Conexion.cn))
+                {
+                    //Query para obtener campos del usuario
+                    string query = "SELECT * FROM ESTADOS";
+
+                    //Objeto donde se guarda la query y conexion para usarla
+                    SqlCommand cmd = new SqlCommand(query, oconexion);
+                    //Se declara que el comando es de tipo texto (no store procedure u otro)
+                    cmd.CommandType = CommandType.Text;
+
+                    //Se abre la conexion
+                    oconexion.Open();
+
+                    //Se crea un reader que va a ejecutar el comando
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        //Mientras lea
+                        while (reader.Read())
+                        {
+                            //En la lista crea un nuevo Usuario con los campos capturados por el reader
+                            lista.Add(
+                                new Estado()
+                                {
+                                    //Los campos se sacan de la capa de entidades
+
+                                    //Para obtener la info se especifica el campo que se quiere obtener en el reader
+                                    IdEstado = reader["IdEstado"].ToString(),
+                                    Descripcion = reader["Descripcion"].ToString(),
+
+                                }
+                            );
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //Crea una lista vacia
+                lista = new List<Estado>();
+            }
+
+            //Regresa lista
+            return lista;
+        }
+
+
+        public List<Municipio> ObtenerMunicipio(string IdEstado)
+        {
+            List<Municipio> lista = new List<Municipio>();
+
+            try
+            {
+                //Con la conexion a la base de datos hacemos lo siguiente
+                using (SqlConnection oconexion = new SqlConnection(Conexion.cn))
+                {
+                    //Query para obtener campos del usuario
+                    string query = "SELECT * FROM MUNICIPIOS WHERE IdEstado = @IdEstado";
+
+
+                    //Objeto donde se guarda la query y conexion para usarla
+                    SqlCommand cmd = new SqlCommand(query, oconexion);
+                    cmd.Parameters.AddWithValue("@IdEstado", IdEstado);
+                    //Se declara que el comando es de tipo texto (no store procedure u otro)
+                    cmd.CommandType = CommandType.Text;
+
+                    //Se abre la conexion
+                    oconexion.Open();
+
+                    //Se crea un reader que va a ejecutar el comando
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        //Mientras lea
+                        while (reader.Read())
+                        {
+                            //En la lista crea un nuevo Usuario con los campos capturados por el reader
+                            lista.Add(
+                                new Municipio()
+                                {
+                                    //Los campos se sacan de la capa de entidades
+
+                                    //Para obtener la info se especifica el campo que se quiere obtener en el reader
+                                    IdMunicipio = reader["IdMunicipio"].ToString(),
+                                    Descripcion = reader["Descripcion"].ToString(),
+
+                                }
+                            );
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //Crea una lista vacia
+                lista = new List<Municipio>();
+            }
+
+            //Regresa lista
+            return lista;
+        }
+
+
+        public List<Colonia> ObtenerColonia(string IdEstado, string IdMunicipio)
+        {
+            List<Colonia> lista = new List<Colonia>();
+
+            try
+            {
+                //Con la conexion a la base de datos hacemos lo siguiente
+                using (SqlConnection oconexion = new SqlConnection(Conexion.cn))
+                {
+                    //Query para obtener campos del usuario
+                    string query = "SELECT * FROM COLONIAS WHERE IdMunicipio = @IdMunicipio AND IdEstado = @IdEstado";
+
+
+                    //Objeto donde se guarda la query y conexion para usarla
+                    SqlCommand cmd = new SqlCommand(query, oconexion);
+                    cmd.Parameters.AddWithValue("@IdMunicipio", IdMunicipio);
+                    cmd.Parameters.AddWithValue("@IdEstado", IdEstado);
+                    //Se declara que el comando es de tipo texto (no store procedure u otro)
+                    cmd.CommandType = CommandType.Text;
+
+                    //Se abre la conexion
+                    oconexion.Open();
+
+                    //Se crea un reader que va a ejecutar el comando
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        //Mientras lea
+                        while (reader.Read())
+                        {
+                            //En la lista crea un nuevo Usuario con los campos capturados por el reader
+                            lista.Add(
+                                new Colonia()
+                                {
+                                    //Los campos se sacan de la capa de entidades
+
+                                    //Para obtener la info se especifica el campo que se quiere obtener en el reader
+                                    IdColonia = reader["IdColonia"].ToString(),
+                                    Descripcion = reader["Descripcion"].ToString(),
+
+                                }
+                            );
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //Crea una lista vacia
+                lista = new List<Colonia>();
+            }
+
+            //Regresa lista
+            return lista;
+        }
     }
 }
