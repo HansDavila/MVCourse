@@ -29,6 +29,7 @@ namespace CapaDatos
                     cmd.Parameters.AddWithValue("MontoTotal", obj.MontoTotal);
                     cmd.Parameters.AddWithValue("Contacto", obj.Contacto);
                     cmd.Parameters.AddWithValue("IdDistrito", obj.IdDistrito);
+                    cmd.Parameters.AddWithValue("IdMunicipio", obj.IdMunicipio);
                     cmd.Parameters.AddWithValue("Telefono", obj.Telefono);
                     cmd.Parameters.AddWithValue("Direccion", obj.Direccion);
                     cmd.Parameters.AddWithValue("IdTransaccion", obj.IdTransaccion);

@@ -11,6 +11,7 @@ using System.Web;
 using System.Web.Mvc;
 using CapaPresentacionTIenda.Filter;
 using CapaEntidad.Paypal;
+using System.Collections;
 
 namespace CapaPresentacionTIenda.Controllers
 {
@@ -147,8 +148,9 @@ namespace CapaPresentacionTIenda.Controllers
                 },
                 Cantidad = oc.Cantidad
             }).ToList();
-
-            return Json(new { data = oLista }, JsonRequestBehavior.AllowGet);
+            var jsonResult = Json(new { data = oLista }, JsonRequestBehavior.AllowGet);
+            jsonResult.MaxJsonLength = int.MaxValue; // Establece el valor máximo
+            return jsonResult;
         }
 
         [HttpPost]
@@ -340,7 +342,9 @@ namespace CapaPresentacionTIenda.Controllers
 
             response_paypal = await opaypal.CrearSolicitud(oCheckOutOrder);
 
-            return Json(response_paypal, JsonRequestBehavior.AllowGet);
+            var jsonResult = Json(response_paypal, JsonRequestBehavior.AllowGet);
+            jsonResult.MaxJsonLength = int.MaxValue; // Establece el valor máximo
+            return jsonResult;            
         }
 
 

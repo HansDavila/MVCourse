@@ -20,6 +20,8 @@ namespace CapaEntidad
 
         public string IdDistrito { get; set; }
 
+        public string IdMunicipio { get; set; }
+
         public string Telefono { get; set; }
 
         public string Direccion { get; set; }
