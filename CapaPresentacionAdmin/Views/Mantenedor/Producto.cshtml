@@ -14,10 +14,13 @@
     <div class="card-header">
         <i class="fas fa-boxes me-1"></i> Lista de Productos
     </div>
-    <div class="card-body">
+    <div class="card-body">       
         <div class="row">
-            <div class="col-12">
-                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear Nuevo</button>
+            <div class="col-12 d-flex">
+                <button type="button" class="btn btn-success me-2" onclick="abrirModal(null)">Crear Nuevo</button>
+                <form id="exportForm" action="@Url.Action("ExportarProductos", "Mantenedor")" method="post">
+                    <button type="submit" class="btn btn-success"><i class="fas fa-file-excel"></i> Exportar</button>
+                </form>
             </div>
         </div>
 

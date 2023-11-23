@@ -124,18 +124,125 @@ namespace CapaPresentacionAdmin.Controllers
 
             dt.TableName = "Datos";
 
-            using(XLWorkbook wb = new XLWorkbook())
+            using (XLWorkbook wb = new XLWorkbook())
             {
-                //Creamos una hoja dentro del documento
-                wb.Worksheets.Add(dt);
+                var ws = wb.Worksheets.Add(dt);
+                ws.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Style.Font.Bold = true;
 
-                using(MemoryStream stream = new MemoryStream())
+                // Aplicar un estilo de título más grande y negrita
+                var tituloCell = ws.Cell(1, 1);
+                tituloCell.Value = "REPORTE DE TRANSACCIONES";
+                tituloCell.Style.Font.FontSize = 20;
+                tituloCell.Style.Font.Bold = true;
+                tituloCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+                // Ajustar el ancho de las columnas antes de aplicar estilos
+                ws.Columns().AdjustToContents();
+
+                //// Aplicar estilos a los encabezados de las columnas
+                //var rngHeaders = ws.Range(2, 1, 2, dt.Columns.Count); // Ajusta esto a la fila correcta si es necesario
+                //rngHeaders.Style.Font.Bold = true;
+                //rngHeaders.Style.Fill.BackgroundColor = XLColor.LightGray;
+                //rngHeaders.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+                using (MemoryStream stream = new MemoryStream())
                 {
                     wb.SaveAs(stream);
-                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReporteVenta" + DateTime.Now.ToString() + ".xlsx");
+                    var fileName = "ReporteVenta" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsx";
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                }
+            }
+
+        }
+
+        [HttpPost]
+        public FileResult ExportarUsuarios()
+        {
+            List<Usuario> oLista = new CN_Usuarios().Lista();
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Nombres", typeof(string));
+            dt.Columns.Add("Apellidos", typeof(string));
+            dt.Columns.Add("Correo", typeof(string));
+            dt.Columns.Add("Activo", typeof(bool));
+
+            foreach (Usuario usuario in oLista)
+            {
+                dt.Rows.Add(usuario.Nombres, usuario.Apellidos, usuario.Correo, usuario.Activo);
+            }
+
+            dt.TableName = "Datos";
+
+            using (XLWorkbook wb = new XLWorkbook())
+            {
+                var ws = wb.Worksheets.Add("LISTA DE USUARIOS");
+
+                // Establecer los encabezados manualmente
+                ws.Cell("A2").Value = "Nombres";
+                ws.Cell("B2").Value = "Apellidos";
+                ws.Cell("C2").Value = "Correo";
+                ws.Cell("D2").Value = "Activo";
+
+                // Estilo de los encabezados como en la segunda imagen
+                var headerStyle = ws.Range("A2:D2").Style;
+                headerStyle.Font.SetBold(true);
+                headerStyle.Fill.SetBackgroundColor(XLColor.FromArgb(221, 235, 247)); // Color azul claro similar al de la segunda imagen
+                headerStyle.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                headerStyle.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+
+                // Aplicar bordes a las celdas de datos
+                var dataRange = ws.Range("A3:D" + (oLista.Count + 2).ToString());
+                dataRange.Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+
+                // Agregar los datos del DataTable a partir de la fila 3
+                int currentRow = 3;
+                foreach (DataRow row in dt.Rows)
+                {
+                    ws.Cell(currentRow, 1).Value = row["Nombres"];
+                    ws.Cell(currentRow, 2).Value = row["Apellidos"];
+                    ws.Cell(currentRow, 3).Value = row["Correo"];
+                    ws.Cell(currentRow, 4).Value = row["Activo"];
+                    currentRow++;
+                }
+
+                // Ajustar el ancho de las columnas para que todo el contenido sea visible
+                ws.Columns().AdjustToContents();
+
+                // Ajustar el ancho de las columnas para que todo el contenido sea visible
+                ws.Column("A").AdjustToContents();
+                ws.Column("B").AdjustToContents();
+                ws.Column("C").AdjustToContents();
+                // Asegurarse de que la columna 'Activo' tenga un ancho mínimo adecuado
+                ws.Column("D").AdjustToContents();
+                if (ws.Column("D").Width < 10) // Establece un ancho mínimo si el ajuste automático no es suficiente
+                {
+                    ws.Column("D").Width = 15;
+                }
+
+                // Fusionar celdas para el título y aplicar estilo
+                ws.Range("A1:D1").Merge().Value = "LISTA DE USUARIOS";
+                ws.Cell("A1").Style
+                    .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center)
+                    .Font.SetFontSize(20)
+                    .Font.SetBold(true)
+                    .Fill.SetBackgroundColor(XLColor.FromArgb(91, 155, 213)); // Color azul oscuro para el título
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    wb.SaveAs(stream);
+                    var fileName = "ListaUsuarios_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsx";
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
                 }
             }
         }
+
+
+
+
+
+
+
 
 
     }

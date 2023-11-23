@@ -1,9 +1,11 @@
 ﻿using CapaEntidad;
 using CapaNegocio;
+using ClosedXML.Excel;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -78,12 +80,86 @@ namespace CapaPresentacionAdmin.Controllers
 
             return Json(new { resultado = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
+
+
+        [HttpPost]
+        public FileResult ExportarCategorias()
+        {
+            List<Categoria> listaCategorias = new CN_Categoria().Lista();
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Descripción", typeof(string));
+            dt.Columns.Add("Activo", typeof(string));
+
+            foreach (var categoria in listaCategorias)
+            {
+                dt.Rows.Add(categoria.Descripcion, categoria.Activo ? "Sí" : "No");
+            }
+
+            using (XLWorkbook wb = new XLWorkbook())
+            {
+                var ws = wb.Worksheets.Add("LISTA DE CATEGORIAS");
+
+                // Establecer los encabezados manualmente
+                ws.Cell("A2").Value = "Descripcion";
+                ws.Cell("B2").Value = "Activo";
+
+
+                // Estilo de los encabezados como en la segunda imagen
+                var headerStyle = ws.Range("A2:B2").Style;
+                headerStyle.Font.SetBold(true);
+                headerStyle.Fill.SetBackgroundColor(XLColor.FromArgb(221, 235, 247)); // Color azul claro similar al de la segunda imagen
+                headerStyle.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                headerStyle.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+
+                // Aplicar bordes a las celdas de datos
+                var dataRange = ws.Range("A3:B" + (listaCategorias.Count + 2).ToString());
+                dataRange.Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+
+                // Agregar los datos del DataTable a partir de la fila 3
+                int currentRow = 3;
+                foreach (DataRow row in dt.Rows)
+                {
+                    ws.Cell(currentRow, 1).Value = row["Descripción"];
+                    ws.Cell(currentRow, 2).Value = row["Activo"];
+
+                    currentRow++;
+                }
+
+                // Ajustar el ancho de las columnas para que todo el contenido sea visible
+                ws.Columns().AdjustToContents();
+
+                // Ajustar el ancho de las columnas para que todo el contenido sea visible
+                ws.Column("A").AdjustToContents();
+                ws.Column("B").AdjustToContents();
+                ws.Column("A").Width = 35;
+
+
+                // Fusionar celdas para el título y aplicar estilo
+                ws.Range("A1:B1").Merge().Value = "LISTA DE CATEGORIAS";
+                ws.Cell("A1").Style
+                    .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center)
+                    .Font.SetFontSize(20)
+                    .Font.SetBold(true)
+                    .Fill.SetBackgroundColor(XLColor.FromArgb(91, 155, 213)); // Color azul oscuro para el título
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    wb.SaveAs(stream);
+                    var fileName = "ListaCategorias_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsx";
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                }
+            }
+        }
+
+
+
         #endregion
-        
-        
+
+
 
         //---------------------------MARCA--------------------------------
-         #region Marca
+        #region Marca
         //Devuelve la lista de categorias en data con la informacion de la categoria en formato Json
         [HttpGet]
         public JsonResult ListarMarcas()
@@ -127,6 +203,80 @@ namespace CapaPresentacionAdmin.Controllers
 
             return Json(new { resultado = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
+
+        [HttpPost]
+        public FileResult ExportarMarcas()
+        {
+            List<Marca> listaMarcas = new CN_Marca().Lista();
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Descripción", typeof(string));
+            dt.Columns.Add("Activo", typeof(string));
+
+            foreach (var marca in listaMarcas)
+            {
+                dt.Rows.Add(marca.Descripcion, marca.Activo ? "Sí" : "No");
+            }
+
+            dt.TableName = "Datos";
+            
+
+            using (XLWorkbook wb = new XLWorkbook())
+            {
+                var ws = wb.Worksheets.Add("LISTA DE MARCAS");
+
+                // Establecer los encabezados manualmente
+                ws.Cell("A2").Value = "Descripcion";
+                ws.Cell("B2").Value = "Activo";
+           
+
+                // Estilo de los encabezados como en la segunda imagen
+                var headerStyle = ws.Range("A2:B2").Style;
+                headerStyle.Font.SetBold(true);
+                headerStyle.Fill.SetBackgroundColor(XLColor.FromArgb(221, 235, 247)); // Color azul claro similar al de la segunda imagen
+                headerStyle.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                headerStyle.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+
+                // Aplicar bordes a las celdas de datos
+                var dataRange = ws.Range("A3:B" + (listaMarcas.Count + 2).ToString());
+                dataRange.Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+
+                // Agregar los datos del DataTable a partir de la fila 3
+                int currentRow = 3;
+                foreach (DataRow row in dt.Rows)
+                {
+                    ws.Cell(currentRow, 1).Value = row["Descripción"];
+                    ws.Cell(currentRow, 2).Value = row["Activo"];
+                    
+                    currentRow++;
+                }
+
+                // Ajustar el ancho de las columnas para que todo el contenido sea visible
+                ws.Columns().AdjustToContents();
+
+                // Ajustar el ancho de las columnas para que todo el contenido sea visible
+                ws.Column("A").AdjustToContents();
+                ws.Column("B").AdjustToContents();
+                ws.Column("A").Width = 35;
+
+
+                // Fusionar celdas para el título y aplicar estilo
+                ws.Range("A1:B1").Merge().Value = "LISTA DE MARCAS";
+                ws.Cell("A1").Style
+                    .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center)
+                    .Font.SetFontSize(20)
+                    .Font.SetBold(true)
+                    .Fill.SetBackgroundColor(XLColor.FromArgb(91, 155, 213)); // Color azul oscuro para el título
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    wb.SaveAs(stream);
+                    var fileName = "ListaMarcas_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsx";
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                }
+            }
+        }
+
         #endregion
 
 
@@ -262,6 +412,67 @@ namespace CapaPresentacionAdmin.Controllers
 
             return Json(new { resultado = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
+
+        [HttpPost]
+        public FileResult ExportarProductos()
+        {
+            List<Producto> listaProductos = new CN_Producto().Lista();
+
+            using (var wb = new XLWorkbook())
+            {
+                var ws = wb.Worksheets.Add("LISTA DE PRODUCTOS");
+
+                // Establecer los encabezados manualmente
+                ws.Cell("A2").Value = "Nombre";
+                ws.Cell("B2").Value = "Descripcion";
+                ws.Cell("C2").Value = "Marca";
+                ws.Cell("D2").Value = "Categoria";
+                ws.Cell("E2").Value = "Precio";
+                ws.Cell("F2").Value = "Stock";
+                ws.Cell("G2").Value = "Activo";
+
+                // Aplicar estilo a los encabezados
+                var headerStyle = ws.Range("A2:G2").Style;
+                headerStyle.Font.SetBold(true);
+                headerStyle.Fill.SetBackgroundColor(XLColor.FromArgb(221, 235, 247));
+                headerStyle.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                headerStyle.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+
+                // Agregar los datos del producto a partir de la fila 2
+                int currentRow = 3;
+                foreach (var producto in listaProductos)
+                {
+                    ws.Cell(currentRow, 1).Value = producto.Nombre;
+                    ws.Cell(currentRow, 2).Value = producto.Descripcion;
+                    ws.Cell(currentRow, 3).Value = producto.oMarca.Descripcion;
+                    ws.Cell(currentRow, 4).Value = producto.oCategoria.Descripcion;
+                    ws.Cell(currentRow, 5).Value = producto.Precio;
+                    ws.Cell(currentRow, 6).Value = producto.Stock;
+                    ws.Cell(currentRow, 7).Value = producto.Activo ? "Sí" : "No";
+                    currentRow++;
+                }
+
+                // Ajustar el ancho de las columnas al contenido
+                ws.Columns().AdjustToContents();
+
+
+                // Fusionar celdas para el título y aplicar estilo
+                ws.Range("A1:G1").Merge().Value = "LISTA DE PRODUCTOS";
+                ws.Cell("A1").Style
+                    .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center)
+                    .Font.SetFontSize(20)
+                    .Font.SetBold(true)
+                    .Fill.SetBackgroundColor(XLColor.FromArgb(91, 155, 213)); // Color azul oscuro para el título
+
+                using (var stream = new MemoryStream())
+                {
+                    wb.SaveAs(stream);
+                    var fileName = "ListaProductos_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsx";
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                }
+            }
+        }
+
         #endregion
     }
 }
