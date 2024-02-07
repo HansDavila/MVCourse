@@ -10,6 +10,8 @@ using System.Web.Mvc;
 using CapaEntidad;
 using CapaNegocio;
 using ClosedXML.Excel;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 
 namespace CapaPresentacionAdmin.Controllers
 {
@@ -157,6 +159,111 @@ namespace CapaPresentacionAdmin.Controllers
         }
 
         [HttpPost]
+        public ActionResult ExportarVentaPDF(string fechainicio, string fechafin, string idtransaccion)
+        {
+            // Obtener los datos del reporte usando tu lógica de negocio
+            List<Reporte> reporteVentas = new CN_Reporte().Ventas(fechainicio, fechafin, idtransaccion);
+
+            // Configurar el documento PDF
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (Document document = new Document(PageSize.A4, 50, 50, 25, 25))
+                {
+                    PdfWriter writer = PdfWriter.GetInstance(document, memoryStream);
+                    document.Open();
+
+                    // Agregar logo de la empresa
+                    string pathLogo = Server.MapPath("~/Content/Images/logo_store.png"); // Asegúrate que la ruta sea correcta
+                    Image logo = Image.GetInstance(pathLogo);
+                    float scalePercent = 20; // ajusta este valor según la necesidad para escalar el tamaño del logo
+                    float posX = document.PageSize.Width - logo.ScaledWidth * (scalePercent / 100) - 10; // Asegura que el logo esté a la derecha
+                    float posY = document.PageSize.Height - logo.ScaledHeight * (scalePercent / 100) - 10; // Asegura que el logo esté en la parte superior
+                    logo.ScalePercent(scalePercent); // escala el logo
+                    logo.SetAbsolutePosition(posX, posY);
+                    document.Add(logo);
+
+                    // Agregar el nombre de la tienda
+                    Paragraph tiendaNombre = new Paragraph("Cariño Floral", new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+                    tiendaNombre.Alignment = Element.ALIGN_CENTER;
+                    document.Add(tiendaNombre);
+
+                    // Agregar el rango de fechas del reporte
+                    Paragraph fechaRango = new Paragraph($"Reporte desde {fechainicio} hasta {fechafin}", new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL));
+                    fechaRango.Alignment = Element.ALIGN_CENTER;
+                    fechaRango.SpacingBefore = 10;
+                    document.Add(fechaRango);
+
+                    // Agregar metadatos y título al documento
+                    document.AddTitle("Reporte de Transacciones");
+                    Paragraph titulo = new Paragraph("Reporte de Transacciones", new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD));
+                    titulo.Alignment = Element.ALIGN_CENTER;
+                    titulo.SpacingBefore = 20; // Espacio antes del título
+                    titulo.SpacingAfter = 30; // Aumenta este valor para agregar más espacio después del título
+                    document.Add(titulo);
+
+                    // Más código para agregar la tabla y el contenido...
+                    // Configurar el estilo de las cabeceras de la tabla
+                    Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+                    BaseColor headerBackgroundColor = BaseColor.BLACK;
+
+                    // Crear una tabla para los detalles del reporte de ventas
+                    PdfPTable table = new PdfPTable(new float[] { 2, 2, 2, 1, 1, 1, 2 }); // 7 columnas
+                    table.WidthPercentage = 100;
+
+                    // Agregar las cabeceras de la tabla con estilo
+                    string[] headers = new string[] { "Fecha Venta", "Cliente", "Producto", "Precio", "Cantidad", "Total", "IdTransaccion" };
+                    foreach (var headerTitle in headers)
+                    {
+                        PdfPCell header = new PdfPCell(new Phrase(headerTitle, headerFont));
+                        header.BackgroundColor = headerBackgroundColor;
+                        header.HorizontalAlignment = PdfPCell.ALIGN_CENTER;
+                        table.AddCell(header);
+                    }
+
+                    // Configurar el estilo de las celdas de datos
+                    Font cellFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+
+                    decimal totalGeneral = 0;
+                    // Agregar los datos de cada venta a la tabla
+                    foreach (var venta in reporteVentas)
+                    {
+                        table.AddCell(new PdfPCell(new Phrase(venta.FechaVenta, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(venta.Cliente, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(venta.Producto, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(venta.Precio.ToString("C", new CultureInfo("es-MX")), cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_RIGHT });
+                        table.AddCell(new PdfPCell(new Phrase(venta.Cantidad.ToString(), cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(venta.Total.ToString("C", new CultureInfo("es-MX")), cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_RIGHT });
+                        table.AddCell(new PdfPCell(new Phrase(venta.IdTransaccion, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        totalGeneral += venta.Total; // Acumulando el total general
+                    }
+
+                    // Agregar una fila para el total general al final de la tabla
+                    Font totalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.BLACK);
+                    PdfPCell totalLabelCell = new PdfPCell(new Phrase("Total General", totalFont));
+                    totalLabelCell.Colspan = 6; // Abarca 6 columnas
+                    totalLabelCell.HorizontalAlignment = PdfPCell.ALIGN_RIGHT;
+                    table.AddCell(totalLabelCell);
+
+                    PdfPCell totalValueCell = new PdfPCell(new Phrase(totalGeneral.ToString("C", new CultureInfo("es-MX")), totalFont));
+                    totalValueCell.HorizontalAlignment = PdfPCell.ALIGN_RIGHT;
+                    table.AddCell(totalValueCell);
+
+                    document.Add(table);
+
+                    document.Close();
+                    writer.Close();
+                }
+
+                // Convertir el MemoryStream a un array de bytes y enviar el archivo PDF al usuario
+                byte[] content = memoryStream.ToArray();
+                return File(content, "application/pdf", "ReporteVenta.pdf");
+            }
+        }
+
+
+
+
+        [HttpPost]
         public FileResult ExportarUsuarios()
         {
             List<Usuario> oLista = new CN_Usuarios().Lista();
@@ -237,9 +344,112 @@ namespace CapaPresentacionAdmin.Controllers
             }
         }
 
+        [HttpPost]
+        public ActionResult ExportarUsuariosPDF()
+        {
+            // Obtener los datos de los usuarios usando tu lógica de negocio
+            List<Usuario> listaUsuarios = new CN_Usuarios().Lista();
+
+            // Configurar el documento PDF
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (Document document = new Document(PageSize.A4, 50, 50, 25, 25))
+                {
+                    PdfWriter writer = PdfWriter.GetInstance(document, memoryStream);
+
+                    // Registra el event handler para el pie de página aquí
+                    writer.PageEvent = new ITextEvents();
+
+                    document.Open();
+
+                    // Agregar logo de la empresa
+                    string pathLogo = Server.MapPath("~/Content/Images/logo_store.png"); // Asegúrate que la ruta sea correcta
+                    Image logo = Image.GetInstance(pathLogo);
+                    float scalePercent = 20; // ajusta este valor según la necesidad para escalar el tamaño del logo
+                    float posX = document.PageSize.Width - logo.ScaledWidth * (scalePercent / 100) - 10; // Asegura que el logo esté a la derecha
+                    float posY = document.PageSize.Height - logo.ScaledHeight * (scalePercent / 100) - 10; // Asegura que el logo esté en la parte superior
+                    logo.ScalePercent(scalePercent); // escala el logo
+                    logo.SetAbsolutePosition(posX, posY);
+                    document.Add(logo);
+
+                    // Agregar el nombre de la tienda
+                    Paragraph tiendaNombre = new Paragraph("Cariño Floral", new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+                    tiendaNombre.Alignment = Element.ALIGN_CENTER;
+                    document.Add(tiendaNombre);
+
+                    // Agregar metadatos y título al documento
+                    document.AddTitle("Lista de Usuarios");
+                    Paragraph titulo = new Paragraph("Lista de Usuarios", new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD));
+                    titulo.Alignment = Element.ALIGN_CENTER;
+                    titulo.SpacingBefore = 20; // Espacio antes del título
+                    titulo.SpacingAfter = 30; // Aumenta este valor para agregar más espacio después del título
+                    document.Add(titulo);
+
+
+                    // Configurar el estilo de las celdas de datos
+                    Font cellFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+
+                    // Más código para agregar la tabla y el contenido...
+                    // Configurar el estilo de las cabeceras de la tabla
+                    Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+                    BaseColor headerBackgroundColor = BaseColor.BLACK;
+
+                    // Crear una tabla para los detalles de los usuarios
+                    PdfPTable table = new PdfPTable(new float[] { 3, 3, 3, 1 }); // 4 columnas
+                    table.WidthPercentage = 100;
+
+                    // Agregar las cabeceras de la tabla
+                    string[] headers = { "Nombres", "Apellidos", "Correo", "Activo" };
+                    foreach (var headerTitle in headers)
+                    {
+                        PdfPCell header = new PdfPCell(new Phrase(headerTitle, headerFont));
+                        header.BackgroundColor = headerBackgroundColor;
+                        header.HorizontalAlignment = PdfPCell.ALIGN_CENTER;
+                        table.AddCell(header);
+                    }
+
+                    // Agregar los datos de los usuarios a la tabla
+                    foreach (var usuario in listaUsuarios)
+                    {
+                        table.AddCell(new PdfPCell(new Phrase(usuario.Nombres, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(usuario.Apellidos, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(usuario.Correo, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(usuario.Activo ? "Sí" : "No", cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                    }
+
+                    document.Add(table);
+
+                    document.Close();
+                    writer.Close();
+                }
+
+                // Convertir el MemoryStream a un array de bytes y enviar el archivo PDF al usuario
+                byte[] content = memoryStream.ToArray();
+                return File(content, "application/pdf", "ListaUsuarios.pdf");
+            }
+        }
 
 
 
+        // Clase que maneja eventos de iTextSharp, colócala fuera del método de la acción pero dentro de la misma clase del controlador
+        public class ITextEvents : PdfPageEventHelper
+        {
+            public override void OnEndPage(PdfWriter writer, Document document)
+            {
+                base.OnEndPage(writer, document);
+                int pageNumber = writer.PageNumber;
+                Paragraph footer = new Paragraph("Página " + pageNumber, FontFactory.GetFont(FontFactory.HELVETICA, 8));
+                footer.Alignment = Element.ALIGN_CENTER;
+                PdfPTable footerTbl = new PdfPTable(1);
+                footerTbl.TotalWidth = 300;
+                footerTbl.HorizontalAlignment = Element.ALIGN_CENTER;
+                PdfPCell cell = new PdfPCell(footer);
+                cell.Border = 0;
+                cell.PaddingLeft = 10;
+                footerTbl.AddCell(cell);
+                footerTbl.WriteSelectedRows(0, -1, 415, 30, writer.DirectContent);
+            }
+        }
 
 
 

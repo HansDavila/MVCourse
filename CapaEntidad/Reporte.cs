@@ -14,6 +14,7 @@ namespace CapaEntidad
         public decimal Precio { get; set; }
         public int Cantidad { get; set; }
         public decimal Total { get; set; }
+        public decimal TotalGeneral { get; set; }
         public string IdTransaccion { get; set; }
     }
 }

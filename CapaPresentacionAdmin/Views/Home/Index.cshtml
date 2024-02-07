@@ -107,7 +107,12 @@
                         <button class="btn btn-success" type="submit"><i class="fas fa-file-excel"></i> Exportar</button>
                     </div>
                 </div>
+
             </div>
+        </form>
+
+        <form id="exportForm" action="@Url.Action("ExportarVentaPDF", "Home")" method="post">
+            <button type="submit" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
         </form>
 
         <hr />
@@ -135,11 +140,11 @@
         </div>
 
         @*<div>
-                <iframe title="Figurama - Informe Figurama" width="1440" height="605.25"
-                        src="https://app.powerbi.com/reportEmbed?reportId=46d18c28-43c3-4619-ae85-5aa3740adb2b&autoAuth=true&ctid=2b76a11f-b7e4-4616-a30a-b87816170f43"
-                        frameborder="0" allowFullScreen="true"></iframe>
+            <iframe title="Figurama - Informe Figurama" width="1440" height="605.25"
+                    src="https://app.powerbi.com/reportEmbed?reportId=46d18c28-43c3-4619-ae85-5aa3740adb2b&autoAuth=true&ctid=2b76a11f-b7e4-4616-a30a-b87816170f43"
+                    frameborder="0" allowFullScreen="true"></iframe>
 
-            </div>*@
+        </div>*@
     </div>
 
 
@@ -147,7 +152,7 @@
 
 <div class="card mb-4" style="display: flex; justify-content: center; align-items: center; height: 60vh;">
     <div>
-        <iframe title="Informe Florería" width="1240" height="505.25" src="https://app.powerbi.com/reportEmbed?reportId=86e39f09-9780-4c43-9c9c-266614c02144&autoAuth=true&ctid=2b76a11f-b7e4-4616-a30a-b87816170f43" frameborder="0" allowFullScreen="true"></iframe>
+        <iframe title="Informe Florería" width="1800" height="700" src="https://app.powerbi.com/reportEmbed?reportId=86e39f09-9780-4c43-9c9c-266614c02144&autoAuth=true&ctid=2b76a11f-b7e4-4616-a30a-b87816170f43" frameborder="0" allowFullScreen="true"></iframe>
     </div>
 </div>
 
@@ -209,11 +214,28 @@
                 "language": {
                     "url": "//cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json"
                 }
+                });
+
+
+            // Botón "Exportar PDF" para enviar los datos al formulario de exportación PDF
+            $("#exportForm").submit(function () {
+
+                var fechainicio = $("#txtfechainicio").val();
+                var fechafin = $("#txtfechafin").val();
+                var idtransaccion = $("#txtidtransaccion").val();
+
+                $("form[action='/Home/ExportarVentaPDF']").append(
+                    '<input type="hidden" name="fechainicio" value="' + fechainicio + '">');
+                $("form[action='/Home/ExportarVentaPDF']").append(
+                    '<input type="hidden" name="fechafin" value="' + fechafin + '">');
+                $("form[action='/Home/ExportarVentaPDF']").append(
+                    '<input type="hidden" name="idtransaccion" value="' + idtransaccion + '">');
             });
 
         })
 
         $("#btnBuscar").on("click", function () {
+            debugger;
             var nuevaUrl = '@Url.Action("ListaReporte", "Home")' +
                 "?fechainicio=" + $("#txtfechainicio").val() +
                 "&fechafin=" + $("#txtfechafin").val() +
@@ -221,6 +243,8 @@
 
             //LLamamos otra ves el metodo pero con las nuevas fechas y volvemos a cargar la tabla
             tablaData.ajax.url(nuevaUrl).load();
+
+            
 
 
         })

@@ -1,6 +1,8 @@
 ﻿using CapaEntidad;
 using CapaNegocio;
 using ClosedXML.Excel;
+using iTextSharp.text.pdf;
+using iTextSharp.text;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using static CapaPresentacionAdmin.Controllers.HomeController;
 
 namespace CapaPresentacionAdmin.Controllers
 {
@@ -152,6 +155,89 @@ namespace CapaPresentacionAdmin.Controllers
             }
         }
 
+        [HttpPost]
+        public ActionResult ExportarCategoriasPDF()
+        {
+            // Obtener los datos de las categorías usando tu lógica de negocio
+            List<Categoria> listaCategorias = new CN_Categoria().Lista();
+
+            // Configurar el documento PDF
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (Document document = new Document(PageSize.A4, 50, 50, 25, 25))
+                {
+                    PdfWriter writer = PdfWriter.GetInstance(document, memoryStream);
+                    writer.PageEvent = new ITextEvents(); // Asegúrate de tener esta clase para eventos
+
+                    document.Open();
+
+                    // Agregar logo de la empresa
+                    string pathLogo = Server.MapPath("~/Content/Images/logo_store.png");
+                    Image logo = Image.GetInstance(pathLogo);
+                    logo.ScalePercent(20);
+                    logo.SetAbsolutePosition(document.PageSize.Width - logo.ScaledWidth - 10,
+                                             document.PageSize.Height - logo.ScaledHeight - 10);
+                    document.Add(logo);
+
+                    // Agregar el nombre de la tienda
+                    Paragraph tiendaNombre = new Paragraph("Cariño Floral",
+                                                            new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+                    tiendaNombre.Alignment = Element.ALIGN_CENTER;
+                    document.Add(tiendaNombre);
+
+                    // Agregar metadatos y título al documento
+                    document.AddTitle("Lista de Categorías");
+                    Paragraph titulo = new Paragraph("Lista de Categorías",
+                                                     new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD));
+                    titulo.Alignment = Element.ALIGN_CENTER;
+                    titulo.SpacingBefore = 20;
+                    titulo.SpacingAfter = 30;
+                    document.Add(titulo);
+
+                    // Estilos de cabecera y celdas
+                    Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+                    BaseColor headerBackgroundColor = BaseColor.BLACK;
+                    Font cellFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+
+                    // Crear tabla para categorías
+                    PdfPTable table = new PdfPTable(new float[] { 1, 4, 1 }); // 3 columnas
+                    table.WidthPercentage = 100;
+
+                    // Cabeceras de la tabla
+                    string[] headers = { "ID", "Descripción", "Activo" };
+                    foreach (var headerTitle in headers)
+                    {
+                        PdfPCell header = new PdfPCell(new Phrase(headerTitle, headerFont))
+                        {
+                            BackgroundColor = headerBackgroundColor,
+                            HorizontalAlignment = PdfPCell.ALIGN_CENTER
+                        };
+                        table.AddCell(header);
+                    }
+
+                    // Datos de las categorías
+                    foreach (var categoria in listaCategorias)
+                    {
+                        table.AddCell(new PdfPCell(new Phrase(categoria.IdCategoria.ToString(), cellFont))
+                        { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(categoria.Descripcion, cellFont))
+                        { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(categoria.Activo ? "Sí" : "No", cellFont))
+                        { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                    }
+
+                    document.Add(table);
+
+                    document.Close();
+                    writer.Close();
+                }
+
+                // Convertir el MemoryStream a un array de bytes y enviar el archivo PDF al usuario
+                byte[] content = memoryStream.ToArray();
+                return File(content, "application/pdf", "ListaCategorias.pdf");
+            }
+        }
+
 
 
         #endregion
@@ -275,7 +361,99 @@ namespace CapaPresentacionAdmin.Controllers
                     return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
                 }
             }
+
+
         }
+
+        [HttpPost]
+        public ActionResult ExportarMarcasPDF()
+        {
+            // Obtener los datos de las marcas usando tu lógica de negocio
+            List<Marca> listaMarcas = new CN_Marca().Lista();
+
+            // Configurar el documento PDF
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (Document document = new Document(PageSize.A4, 50, 50, 25, 25))
+                {
+                    PdfWriter writer = PdfWriter.GetInstance(document, memoryStream);
+
+                    // Asumiendo que tienes una clase ITextEvents para manejar eventos del PDF
+                    writer.PageEvent = new ITextEvents();
+
+                    document.Open();
+
+                    // Agregar logo de la empresa y demás elementos al documento                    
+                    string pathLogo = Server.MapPath("~/Content/Images/logo_store.png"); // Asegúrate que la ruta sea correcta
+                    Image logo = Image.GetInstance(pathLogo);
+                    float scalePercent = 20; // ajusta este valor según la necesidad para escalar el tamaño del logo
+                    float posX = document.PageSize.Width - logo.ScaledWidth * (scalePercent / 100) - 10; // Asegura que el logo esté a la derecha
+                    float posY = document.PageSize.Height - logo.ScaledHeight * (scalePercent / 100) - 10; // Asegura que el logo esté en la parte superior
+                    logo.ScalePercent(scalePercent); // escala el logo
+                    logo.SetAbsolutePosition(posX, posY);
+                    document.Add(logo);
+
+                    // Agregar el nombre de la tienda
+                    Paragraph tiendaNombre = new Paragraph("Cariño Floral", new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+                    tiendaNombre.Alignment = Element.ALIGN_CENTER;
+                    document.Add(tiendaNombre);
+
+                    // Agregar metadatos y título al documento
+                    document.AddTitle("Lista de Usuarios");
+                    Paragraph titulo = new Paragraph("Lista de Marcas", new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD));
+                    titulo.Alignment = Element.ALIGN_CENTER;
+                    titulo.SpacingBefore = 20; // Espacio antes del título
+                    titulo.SpacingAfter = 30; // Aumenta este valor para agregar más espacio después del título
+                    document.Add(titulo);
+
+
+                    // Configurar el estilo de las celdas de datos
+                    Font cellFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+
+                    // Más código para agregar la tabla y el contenido...
+                    // Configurar el estilo de las cabeceras de la tabla
+                    Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+                    BaseColor headerBackgroundColor = BaseColor.BLACK;                  
+
+                    // Crear y configurar la tabla para los detalles de las marcas
+                    PdfPTable table = new PdfPTable(new float[] { 1, 4, 1 }); // 3 columnas
+                    table.WidthPercentage = 100;
+
+                    // Agregar las cabeceras de la tabla
+                    string[] headers = { "ID Marca", "Descripción", "Activo" };
+                    foreach (string headerTitle in headers)
+                    {
+                        PdfPCell header = new PdfPCell(new Phrase(headerTitle, headerFont));
+                        header.BackgroundColor = headerBackgroundColor;
+                        header.HorizontalAlignment = PdfPCell.ALIGN_CENTER;
+                        table.AddCell(header);
+                    }
+
+                    // Agregar los datos de las marcas a la tabla
+                    foreach (Marca marca in listaMarcas)
+                    {
+                        table.AddCell(new PdfPCell(new Phrase(marca.IdMarca.ToString(), cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(marca.Descripcion, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(marca.Activo ? "Sí" : "No", cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                    }
+
+                    document.Add(table);
+
+                    document.Close();
+                    writer.Close();
+                }
+
+                // Convertir el MemoryStream a un array de bytes y enviar el archivo PDF al usuario
+                byte[] content = memoryStream.ToArray();
+                return File(content, "application/pdf", "ListaMarcas.pdf");
+            }
+        }
+
+        
+
+
+
+
 
         #endregion
 
@@ -470,6 +648,91 @@ namespace CapaPresentacionAdmin.Controllers
                     var fileName = "ListaProductos_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsx";
                     return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
                 }
+            }
+        }
+
+
+        [HttpPost]
+        public ActionResult ExportarProductosPDF()
+        {
+            // Obtener los datos de los productos usando tu lógica de negocio
+            List<Producto> listaProductos = new CN_Producto().Lista();
+
+            // Configurar el documento PDF
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (Document document = new Document(PageSize.A4, 50, 50, 25, 25))
+                {
+                    PdfWriter writer = PdfWriter.GetInstance(document, memoryStream);
+                    writer.PageEvent = new ITextEvents(); // Asegúrate de tener esta clase para eventos
+
+                    document.Open();
+
+                    // Agregar logo de la empresa
+                    string pathLogo = Server.MapPath("~/Content/Images/logo_store.png");
+                    Image logo = Image.GetInstance(pathLogo);
+                    logo.ScalePercent(20);
+                    logo.SetAbsolutePosition(document.PageSize.Width - logo.ScaledWidth - 10,
+                                             document.PageSize.Height - logo.ScaledHeight - 10);
+                    document.Add(logo);
+
+                    // Agregar el nombre de la tienda
+                    Paragraph tiendaNombre = new Paragraph("Cariño Floral",
+                                                            new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+                    tiendaNombre.Alignment = Element.ALIGN_CENTER;
+                    document.Add(tiendaNombre);
+
+                    // Agregar metadatos y título al documento
+                    document.AddTitle("Lista de Productos");
+                    Paragraph titulo = new Paragraph("Lista de Productos",
+                                                     new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD));
+                    titulo.Alignment = Element.ALIGN_CENTER;
+                    titulo.SpacingBefore = 20;
+                    titulo.SpacingAfter = 30;
+                    document.Add(titulo);
+
+                    // Estilos de cabecera y celdas
+                    Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+                    BaseColor headerBackgroundColor = BaseColor.BLACK;
+                    Font cellFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+
+                    // Crear tabla para productos
+                    PdfPTable table = new PdfPTable(new float[] { 2, 3, 2, 2, 1, 1, 1 }); // 7 columnas
+                    table.WidthPercentage = 100;
+
+                    // Cabeceras de la tabla
+                    string[] headers = { "Nombre", "Descripción", "Marca", "Categoría", "Precio", "Stock", "Activo" };
+                    foreach (var headerTitle in headers)
+                    {
+                        PdfPCell header = new PdfPCell(new Phrase(headerTitle, headerFont))
+                        {
+                            BackgroundColor = headerBackgroundColor,
+                            HorizontalAlignment = PdfPCell.ALIGN_CENTER
+                        };
+                        table.AddCell(header);
+                    }
+
+                    // Datos de los productos
+                    foreach (var producto in listaProductos)
+                    {
+                        table.AddCell(new PdfPCell(new Phrase(producto.Nombre, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(producto.Descripcion, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(producto.oMarca.Descripcion, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(producto.oCategoria.Descripcion, cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(producto.Precio.ToString("C", new CultureInfo("es-MX")), cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_RIGHT });
+                        table.AddCell(new PdfPCell(new Phrase(producto.Stock.ToString(), cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase(producto.Activo ? "Sí" : "No", cellFont)) { HorizontalAlignment = PdfPCell.ALIGN_CENTER });
+                    }
+
+                    document.Add(table);
+
+                    document.Close();
+                    writer.Close();
+                }
+
+                // Convertir el MemoryStream a un array de bytes y enviar el archivo PDF al usuario
+                byte[] content = memoryStream.ToArray();
+                return File(content, "application/pdf", "ListaProductos.pdf");
             }
         }
 

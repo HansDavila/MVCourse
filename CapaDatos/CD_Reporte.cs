@@ -29,7 +29,7 @@ namespace CapaDatos
                     SqlCommand cmd = new SqlCommand("sp_ReporteVentas", oconexion);
                     cmd.Parameters.AddWithValue("fechainicio", fechainicio);
                     cmd.Parameters.AddWithValue("fechafin", fechafin);
-                    cmd.Parameters.AddWithValue("@idtransaccion", idTransaccion);
+                    cmd.Parameters.AddWithValue("idtransaccion", idTransaccion);
 
                     //Se declara que el comando es de tipo STORED PROCEDURE
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -56,6 +56,7 @@ namespace CapaDatos
                                     Precio = Convert.ToDecimal(reader["Precio"], new CultureInfo("es-MX")),                                    
                                     Cantidad = Convert.ToInt32(reader["Cantidad"]),
                                     Total = Convert.ToDecimal(reader["Total"], new CultureInfo("es-MX")),
+                                    TotalGeneral = Convert.ToDecimal(reader["TotalGeneral"], new CultureInfo("es-MX")),
                                     IdTransaccion = reader["IdTransaccion"].ToString()                                    
                                 }
                             );
